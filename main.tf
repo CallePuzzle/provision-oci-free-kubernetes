@@ -2,8 +2,8 @@ data "oci_core_images" "this" {
   for_each = local.instances
 
   compartment_id           = var.compartment_id
-  operating_system         = "Oracle Linux"
-  operating_system_version = "8"
+  operating_system         = "Canonical Ubuntu"
+  operating_system_version = "22.04"
   shape                    = each.value.shape
 }
 
@@ -27,7 +27,7 @@ locals {
 }
 
 module "instance" {
-  source  = "./terraform-oci-compute-instance"
+  source = "oracle-terraform-modules/compute-instance/oci"
 
   for_each = local.instances
 
@@ -58,8 +58,7 @@ module "instance" {
   ssh_public_keys = file("~/.ssh/id_rsa.pub")
   # networking parameters
   public_ip    = "EPHEMERAL"
-  primary_subnet_ocid = module.vcn.subnet_id["ssh"]
-  segundary_subnet_ocids = [module.vcn.subnet_id["k8s"]]
+  subnet_ocids = [module.vcn.subnet_id["k8s"]]
 
   freeform_tags = {
     managed_by    = "terraform"
@@ -68,4 +67,17 @@ module "instance" {
     "environment" = "pro"
     "part_of"     = "k8s"
   }
+}
+
+
+resource "local_file" "k0sctl" {
+  filename = "${path.module}/k0s/k0sctl.yaml"
+  content = templatefile("${path.module}/k0s/k0sctl.yaml.tmpl", {
+    master_1_private_ip = module.instance["master"].private_ip[0]
+    master_1_public_ip  = module.instance["master"].public_ip[0]
+    master_2_private_ip = module.instance["master"].private_ip[1]
+    master_2_public_ip  = module.instance["master"].public_ip[1]
+    worker_private_ip   = module.instance["worker"].private_ip[0]
+    worker_public_ip    = module.instance["worker"].public_ip[0]
+  })
 }

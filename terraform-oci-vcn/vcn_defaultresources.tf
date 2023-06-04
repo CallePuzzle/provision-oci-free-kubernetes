@@ -59,8 +59,27 @@ resource "oci_core_default_security_list" "restore_default" {
     }
   }
 
-  lifecycle {
-    ignore_changes = [egress_security_rules, ingress_security_rules, defined_tags]
+  dynamic "ingress_security_rules" {
+    for_each = var.additional_default_securty_list_ingress_rules
+    iterator = rule
+    content {
+      protocol = rule.value.protocol
+      source   = rule.value.source
+      dynamic "tcp_options" {
+        for_each = rule.value.tcp_options == null ? [] : [rule.value.tcp_options]
+        content {
+          min = tcp_options.value.min
+          max = tcp_options.value.max
+        }        
+      }
+      dynamic "udp_options" {
+        for_each = rule.value.udp_options == null ? [] : [rule.value.udp_options]
+        content {
+          min = udp_options.value.min
+          max = udp_options.value.max
+        }        
+      }
+    }
   }
   
   count = var.lockdown_default_seclist == false ? 1 : 0

@@ -70,6 +70,17 @@ variable "lockdown_default_seclist" {
   type        = bool
 }
 
+variable "additional_default_securty_list_ingress_rules" {
+  description = "List of additional ingress rules to add to the VCN Default Security List"
+  type        = list(object({
+    protocol    = string
+    source      = string
+    tcp_options = optional(map(number), null)
+    udp_options = optional(map(number), null)
+  }))
+  default     = []
+}
+
 variable "nat_gateway_public_ip_id" {
   description = "OCID of reserved IP address for NAT gateway. The reserved public IP address needs to be manually created."
   default     = "none"

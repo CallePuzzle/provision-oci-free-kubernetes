@@ -1,0 +1,30 @@
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: k0s-cluster
+spec:
+  hosts:
+  - ssh:
+      address: ${master_1_public_ip}
+      user: ubuntu
+      port: 22
+      keyPath: null
+    role: controller
+    privateAddress: ${master_1_private_ip}
+  - ssh:
+      address: ${master_2_public_ip}
+      user: ubuntu
+      port: 22
+      keyPath: null
+    role: controller
+    privateAddress: ${master_2_private_ip}
+  - ssh:
+      address: ${ worker_public_ip }
+      user: ubuntu
+      port: 22
+      keyPath: null
+    role: worker
+    privateAddress: ${ worker_private_ip }
+  k0s:
+    version: 1.27.2+k0s.0
+    dynamicConfig: false
