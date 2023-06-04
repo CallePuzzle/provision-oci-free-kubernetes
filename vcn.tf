@@ -11,8 +11,7 @@ module "vcn" {
   lockdown_default_seclist = false
 
   subnets = {
-    ssh = { name = "ssh", cidr_block = "10.2.0.0/24" },
-    k8s = { name = "k8s", cidr_block = "10.2.1.0/24", public = false },
+    k8s = { name = "k8s", cidr_block = "10.2.0.0/24" },
   }
 
   freeform_tags = {
