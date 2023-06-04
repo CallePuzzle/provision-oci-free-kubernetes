@@ -3,7 +3,7 @@ data "oci_core_images" "this" {
 
   compartment_id           = var.compartment_id
   operating_system         = "Oracle Linux"
-  operating_system_version = "9"
+  operating_system_version = "8"
   shape                    = each.value.shape
 }
 
@@ -27,8 +27,7 @@ locals {
 }
 
 module "instance" {
-  source  = "oracle-terraform-modules/compute-instance/oci"
-  version = "2.4.1"
+  source  = "./terraform-oci-compute-instance"
 
   for_each = local.instances
 
@@ -59,7 +58,8 @@ module "instance" {
   ssh_public_keys = file("~/.ssh/id_rsa.pub")
   # networking parameters
   public_ip    = "EPHEMERAL"
-  subnet_ocids = [module.vcn.subnet_id["ssh"]]
+  primary_subnet_ocid = module.vcn.subnet_id["ssh"]
+  segundary_subnet_ocids = [module.vcn.subnet_id["k8s"]]
 
   freeform_tags = {
     managed_by    = "terraform"

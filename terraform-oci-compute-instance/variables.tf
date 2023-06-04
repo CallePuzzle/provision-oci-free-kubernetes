@@ -214,7 +214,12 @@ variable "skip_source_dest_check" {
   default     = false
 }
 
-variable "subnet_ocids" {
+variable "primary_subnet_ocid" {
+  description = "The unique identifiers (OCIDs) of the subnets in which the instance primary VNICs are created."
+  type        = string
+}
+
+variable "segundary_subnet_ocids" {
   description = "The unique identifiers (OCIDs) of the subnets in which the instance primary VNICs are created."
   type        = list(string)
 }
@@ -226,6 +231,12 @@ variable "vnic_name" {
 }
 
 variable "primary_vnic_nsg_ids" {
+  description = "A list of the OCIDs of the network security groups (NSGs) to add the primary VNIC to"
+  type        = list(string)
+  default     = null
+}
+
+variable "segundary_vnic_nsg_ids" {
   description = "A list of the OCIDs of the network security groups (NSGs) to add the primary VNIC to"
   type        = list(string)
   default     = null

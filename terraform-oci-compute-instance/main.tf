@@ -22,14 +22,6 @@ locals {
   }
 }
 
-####################
-# Subnet Datasource
-####################
-data "oci_core_subnet" "instance_subnet" {
-  count     = length(var.subnet_ocids)
-  subnet_id = element(var.subnet_ocids, count.index)
-}
-
 ############
 # Shapes
 ############
@@ -85,44 +77,44 @@ resource "oci_core_instance" "instance" {
     // this configuration is applied at first resource creation
     // subsequent updates are detected as changes by terraform but seems to be ignored by the provider ...
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"autonomous_linux","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "autonomous_linux", "ENABLED")
       name          = "Oracle Autonomous Linux"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"bastion","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "bastion", "ENABLED")
       name          = "Bastion"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"block_volume_mgmt","DISABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "block_volume_mgmt", "DISABLED")
       name          = "Block Volume Management"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"custom_logs","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "custom_logs", "ENABLED")
       name          = "Custom Logs Monitoring"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"management","DISABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "management", "DISABLED")
       name          = "Management Agent"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"monitoring","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "monitoring", "ENABLED")
       name          = "Compute Instance Monitoring"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"osms","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "osms", "ENABLED")
       name          = "OS Management Service Agent"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"run_command","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "run_command", "ENABLED")
       name          = "Compute Instance Run Command"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"vulnerability_scanning","ENABLED")
+      desired_state = lookup(var.cloud_agent_plugins, "vulnerability_scanning", "ENABLED")
       name          = "Vulnerability Scanning"
     }
     plugins_config {
-      desired_state = lookup(var.cloud_agent_plugins,"java_management_service","DISABLED")
-      name = "Oracle Java Management Service"
+      desired_state = lookup(var.cloud_agent_plugins, "java_management_service", "DISABLED")
+      name          = "Oracle Java Management Service"
     }
   }
 
@@ -136,7 +128,7 @@ resource "oci_core_instance" "instance" {
     )
     skip_source_dest_check = var.skip_source_dest_check
     // Current implementation requires providing a list of subnets when using ad-specific subnets
-    subnet_id = data.oci_core_subnet.instance_subnet[count.index % length(data.oci_core_subnet.instance_subnet.*.id)].id
+    subnet_id = var.primary_subnet_ocid
     nsg_ids   = var.primary_vnic_nsg_ids
 
     freeform_tags = local.merged_freeform_tags
@@ -204,4 +196,30 @@ resource "oci_core_public_ip" "public_ip" {
 
   freeform_tags = local.merged_freeform_tags
   defined_tags  = var.defined_tags
+}
+
+locals {
+  secundary_vnics = setproduct(range(var.instance_count), var.segundary_subnet_ocids)
+}
+
+resource "oci_core_vnic_attachment" "this" {
+  for_each = zipmap(local.secundary_vnics[*].0, local.secundary_vnics[*].1)
+
+  create_vnic_details {
+    assign_public_ip       = false
+    display_name     = var.vnic_name == "" ? "" : var.instance_count != "1" ? "${var.vnic_name}_${each.key + 1}" : var.vnic_name
+    hostname_label   = var.hostname_label == "" ? "" : var.instance_count != "1" ? "${var.hostname_label}-${each.key + 1}" : var.hostname_label
+    private_ip = element(
+      concat(var.private_ips, [""]),
+      length(var.private_ips) == 0 ? 0 : each.key,
+    )
+    skip_source_dest_check = var.skip_source_dest_check
+    // Current implementation requires providing a list of subnets when using ad-specific subnets
+    subnet_id = each.value
+    nsg_ids   = var.segundary_vnic_nsg_ids
+
+    freeform_tags = local.merged_freeform_tags
+    defined_tags  = var.defined_tags
+  }
+  instance_id = oci_core_instance.instance[each.key].id
 }

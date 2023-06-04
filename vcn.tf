@@ -1,6 +1,5 @@
 module "vcn" {
-  source  = "oracle-terraform-modules/vcn/oci"
-  version = "3.5.4"
+  source  = "./terraform-oci-vcn"
 
   vcn_name = "k8s-vcn"
 
@@ -12,7 +11,8 @@ module "vcn" {
   lockdown_default_seclist = false
 
   subnets = {
-    ssh = { name = "ssh", cidr_block = "10.2.0.0/24" }
+    ssh = { name = "ssh", cidr_block = "10.2.0.0/24" },
+    k8s = { name = "k8s", cidr_block = "10.2.1.0/24", public = false },
   }
 
   freeform_tags = {
