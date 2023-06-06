@@ -10,11 +10,12 @@ data "oci_core_images" "this" {
 locals {
   instances = {
     master = {
-      instance_count              = 2
+      instance_count              = 1
       instance_display_name       = "k8s-master"
       shape                       = "VM.Standard.E2.1.Micro"
       instance_flex_memory_in_gbs = null
       instance_flex_ocpus         = null
+      boot_volume_size_in_gbs     = 50
     }
     worker = {
       instance_count              = 1
@@ -22,6 +23,7 @@ locals {
       shape                       = "VM.Standard.A1.Flex"
       instance_flex_memory_in_gbs = 24
       instance_flex_ocpus         = 4
+      boot_volume_size_in_gbs     = 150
     }
   }
 }
@@ -31,17 +33,21 @@ module "instance" {
 
   for_each = local.instances
 
-  compartment_ocid            = var.compartment_id
-  ad_number                   = 1
-  instance_count              = each.value.instance_count
-  instance_display_name       = each.value.instance_display_name
-  instance_state              = "RUNNING"
+  compartment_ocid      = var.compartment_id
+  ad_number             = 1
+  instance_count        = each.value.instance_count
+  instance_display_name = each.value.instance_display_name
+  instance_state        = "RUNNING"
+
+  source_ocid = data.oci_core_images.this[each.key].images.0.id
+  source_type = "image"
+
   shape                       = each.value.shape
-  source_ocid                 = data.oci_core_images.this[each.key].images.0.id
-  source_type                 = "image"
   instance_flex_memory_in_gbs = each.value.instance_flex_memory_in_gbs
   instance_flex_ocpus         = each.value.instance_flex_ocpus
   baseline_ocpu_utilization   = "BASELINE_1_1"
+  boot_volume_size_in_gbs     = each.value.boot_volume_size_in_gbs
+
   cloud_agent_plugins = {
     java_management_service = "DISABLED"
     autonomous_linux        = "ENABLED"
@@ -54,9 +60,10 @@ module "instance" {
     monitoring              = "ENABLED"
     block_volume_mgmt       = "DISABLED"
   }
-  # operating system parameters
+
   ssh_public_keys = file("~/.ssh/id_rsa.pub")
-  # networking parameters
+  user_data       = filebase64("${path.module}/k0s/user-data.sh")
+
   public_ip    = "EPHEMERAL"
   subnet_ocids = [module.vcn.subnet_id["k8s"]]
 
@@ -73,11 +80,9 @@ module "instance" {
 resource "local_file" "k0sctl" {
   filename = "${path.module}/k0s/k0sctl.yaml"
   content = templatefile("${path.module}/k0s/k0sctl.yaml.tmpl", {
-    master_1_private_ip = module.instance["master"].private_ip[0]
-    master_1_public_ip  = module.instance["master"].public_ip[0]
-    master_2_private_ip = module.instance["master"].private_ip[1]
-    master_2_public_ip  = module.instance["master"].public_ip[1]
-    worker_private_ip   = module.instance["worker"].private_ip[0]
-    worker_public_ip    = module.instance["worker"].public_ip[0]
+    master_private_ip = module.instance["master"].private_ip[0]
+    master_public_ip  = module.instance["master"].public_ip[0]
+    worker_private_ip = module.instance["worker"].private_ip[0]
+    worker_public_ip  = module.instance["worker"].public_ip[0]
   })
 }

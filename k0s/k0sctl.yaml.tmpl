@@ -5,19 +5,12 @@ metadata:
 spec:
   hosts:
   - ssh:
-      address: ${master_1_public_ip}
+      address: ${master_public_ip}
       user: ubuntu
       port: 22
       keyPath: null
     role: controller
-    privateAddress: ${master_1_private_ip}
-  - ssh:
-      address: ${master_2_public_ip}
-      user: ubuntu
-      port: 22
-      keyPath: null
-    role: controller
-    privateAddress: ${master_2_private_ip}
+    privateAddress: ${master_private_ip}
   - ssh:
       address: ${ worker_public_ip }
       user: ubuntu
@@ -27,4 +20,21 @@ spec:
     privateAddress: ${ worker_private_ip }
   k0s:
     version: 1.27.2+k0s.0
-    dynamicConfig: false
+    dynamicConfig: true
+    config:
+      apiVersion: k0s.k0sproject.io/v1beta1
+      kind: ClusterConfig
+      metadata:
+        name: martaneta-k0s-cluster
+      spec:
+        extensions:
+          helm:
+            repositories:
+            - name: argo
+              url: https://argoproj.github.io/argo-helm
+            charts:
+            - name: argocd
+              chartname: charts/argo-cd
+              version: "5.35.0"
+              namespace: argocd
+              values: ""
