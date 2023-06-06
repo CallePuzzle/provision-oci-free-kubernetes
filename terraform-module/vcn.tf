@@ -69,15 +69,13 @@ locals {
 }
 
 module "vcn" {
-  source = "./terraform-oci-vcn"
+  source = "./vcn"
 
   vcn_name = "k8s-vcn"
 
-  vcn_cidrs               = ["10.2.0.0/16"]
-  compartment_id          = var.compartment_id
-  create_internet_gateway = true
-  #create_nat_gateway = true
-  #create_service_gateway = true
+  vcn_cidrs                = ["10.2.0.0/16"]
+  compartment_id           = var.compartment_id
+  create_internet_gateway  = true
   lockdown_default_seclist = false
 
   additional_default_securty_list_ingress_rules = local.additional_default_securty_list_ingress_rules
