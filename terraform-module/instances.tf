@@ -62,7 +62,7 @@ module "instance" {
   }
 
   ssh_public_keys = file("~/.ssh/id_rsa.pub")
-  user_data       = filebase64("${path.module}/k0s/user-data.sh")
+  user_data       = filebase64("${path.module}/user-data.sh")
 
   public_ip    = "EPHEMERAL"
   subnet_ocids = [module.vcn.subnet_id["k8s"]]
@@ -78,8 +78,8 @@ module "instance" {
 
 
 resource "local_file" "k0sctl" {
-  filename = "${path.module}/k0s/k0sctl.yaml"
-  content = templatefile("${path.module}/k0s/k0sctl.yaml.tmpl", {
+  filename = var.k0s_config_path
+  content = templatefile("${path.module}/k0sctl.yaml.tmpl", {
     master_private_ip = module.instance["master"].private_ip[0]
     master_public_ip  = module.instance["master"].public_ip[0]
     worker_private_ip = module.instance["worker"].private_ip[0]
