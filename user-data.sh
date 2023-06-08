@@ -14,3 +14,6 @@ sudo systemctl disable iptables
 
 # Install kubectl
 snap install kubectl --classic
+
+# Reboot
+sudo reboot

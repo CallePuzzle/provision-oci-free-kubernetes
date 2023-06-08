@@ -5,22 +5,15 @@ metadata:
 spec:
   hosts:
   - ssh:
-      address: ${master_public_ip}
+      address: ${public_ip}
       user: ubuntu
       port: 22
       keyPath: null
     role: controller
-    privateAddress: ${master_private_ip}
-  - ssh:
-      address: ${ worker_public_ip }
-      user: ubuntu
-      port: 22
-      keyPath: null
-    role: worker
-    privateAddress: ${ worker_private_ip }
+    privateAddress: ${private_ip}
   k0s:
     version: 1.27.2+k0s.0
-    dynamicConfig: true
+    dynamicConfig: false
     config:
       apiVersion: k0s.k0sproject.io/v1beta1
       kind: ClusterConfig

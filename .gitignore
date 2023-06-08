@@ -20,5 +20,5 @@ provider-vars.profile
 private_key.pem
 
 # k0s
-k0s/k0sctl.yaml
-k0s/kubeconfig
+test/k0sctl.yaml
+test/kubeconfig

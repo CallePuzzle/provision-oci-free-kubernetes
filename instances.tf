@@ -9,21 +9,13 @@ data "oci_core_images" "this" {
 
 locals {
   instances = {
-    master = {
+    controllerworker = {
       instance_count              = 1
-      instance_display_name       = "k8s-master"
-      shape                       = "VM.Standard.E2.1.Micro"
-      instance_flex_memory_in_gbs = null
-      instance_flex_ocpus         = null
-      boot_volume_size_in_gbs     = 50
-    }
-    worker = {
-      instance_count              = 1
-      instance_display_name       = "k8s-worker"
+      instance_display_name       = "${var.name}-controller-worker"
       shape                       = "VM.Standard.A1.Flex"
       instance_flex_memory_in_gbs = 24
       instance_flex_ocpus         = 4
-      boot_volume_size_in_gbs     = 150
+      boot_volume_size_in_gbs     = 200
     }
   }
 }
@@ -65,14 +57,14 @@ module "instance" {
   user_data       = filebase64("${path.module}/user-data.sh")
 
   public_ip    = "EPHEMERAL"
-  subnet_ocids = [module.vcn.subnet_id["k8s"]]
+  subnet_ocids = [module.vcn.subnet_id["k0s"]]
 
   freeform_tags = {
     managed_by    = "terraform"
     module        = "oracle-terraform-modules/compute-instance/oci"
     "component"   = "instance"
     "environment" = "pro"
-    "part_of"     = "k8s"
+    "part_of"     = "k0s"
   }
 }
 
@@ -80,9 +72,7 @@ module "instance" {
 resource "local_file" "k0sctl" {
   filename = var.k0s_config_path
   content = templatefile("${path.module}/k0sctl.yaml.tmpl", {
-    master_private_ip = module.instance["master"].private_ip[0]
-    master_public_ip  = module.instance["master"].public_ip[0]
-    worker_private_ip = module.instance["worker"].private_ip[0]
-    worker_public_ip  = module.instance["worker"].public_ip[0]
+    private_ip = module.instance["controllerworker"].private_ip[0]
+    public_ip = module.instance["controllerworker"].public_ip[0]
   })
 }

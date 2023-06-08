@@ -5,7 +5,7 @@ data "oci_load_balancer_shapes" "this" {
 resource "oci_load_balancer_load_balancer" "this" {
 
   compartment_id = var.compartment_id
-  display_name   = "k0s-lb"
+  display_name   = "${var.name}-lb"
 
   subnet_ids = var.subnet_ids
 
@@ -18,7 +18,7 @@ resource "oci_load_balancer_load_balancer" "this" {
 
 resource "oci_load_balancer_backend_set" "this" {
   load_balancer_id = oci_load_balancer_load_balancer.this.id
-  name             = "k0s-backend-set"
+  name             = "${var.name}-backend-set"
   policy           = "ROUND_ROBIN"
 
   health_checker {
@@ -40,7 +40,7 @@ resource "oci_load_balancer_backend" "this" {
 resource "oci_load_balancer_listener" "this" {
   default_backend_set_name = oci_load_balancer_backend_set.this.name
   load_balancer_id         = oci_load_balancer_load_balancer.this.id
-  name                     = "k0s-listener"
+  name                     = "${var.name}-listener"
   port                     = 80
   protocol                 = "HTTP"
 }

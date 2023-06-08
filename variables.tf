@@ -1,3 +1,9 @@
+variable "name" {
+  description = "The name of the k0s cluster"
+  type        = string
+  default    = "k0s"
+}
+
 variable "compartment_id" {
   description = "The OCID of the compartment"
   type        = string

@@ -71,7 +71,7 @@ locals {
 module "vcn" {
   source = "./vcn"
 
-  vcn_name = "k8s-vcn"
+  vcn_name = "${var.name}-vcn"
 
   vcn_cidrs                = ["10.2.0.0/16"]
   compartment_id           = var.compartment_id
@@ -81,7 +81,7 @@ module "vcn" {
   additional_default_securty_list_ingress_rules = local.additional_default_securty_list_ingress_rules
 
   subnets = {
-    k8s = { name = "k8s", cidr_block = local.subnet_cidr_block },
+    k0s = { name = var.name, cidr_block = local.subnet_cidr_block },
   }
 
   freeform_tags = {
@@ -89,6 +89,6 @@ module "vcn" {
     module        = "oracle-terraform-modules/vcn/oci"
     "component"   = "vcn"
     "environment" = "pro"
-    "part_of"     = "k8s"
+    "part_of"     = var.name
   }
 }
