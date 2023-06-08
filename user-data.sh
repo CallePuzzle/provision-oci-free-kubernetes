@@ -15,5 +15,8 @@ sudo systemctl disable iptables
 # Install kubectl
 snap install kubectl --classic
 
+echo "source <(kubectl completion bash)" | sudo tee -a /root/.bashrc >/dev/null
+echo "export KUBECONFIG=/var/lib/k0s/pki/admin.conf" | sudo tee -a /root/.bashrc >/dev/null
+
 # Reboot
 sudo reboot
