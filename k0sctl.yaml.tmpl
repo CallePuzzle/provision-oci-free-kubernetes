@@ -9,7 +9,7 @@ spec:
       user: ubuntu
       port: 22
       keyPath: null
-    role: controller
+    role: controller+worker
     privateAddress: ${private_ip}
   k0s:
     version: 1.27.2+k0s.0
@@ -26,8 +26,22 @@ spec:
             - name: argo
               url: https://argoproj.github.io/argo-helm
             charts:
-            - name: argocd
-              chartname: charts/argo-cd
+            - name: argo-cd
+              chartname: argo/argo-cd
               version: "5.35.0"
               namespace: argocd
-              values: ""
+              values: |
+                redis-ha:
+                  enabled: false
+
+                controller:
+                  replicas: 1
+
+                server:
+                  replicas: 1
+
+                repoServer:
+                  replicas: 1
+
+                applicationSet:
+                  replicaCount: 1
