@@ -10,15 +10,17 @@ spec:
       port: 22
       keyPath: null
     role: controller+worker
+    noTaints: true
     privateAddress: ${private_ip}
   k0s:
-    version: 1.27.2+k0s.0
+    version: 1.27.4+k0s.0
     dynamicConfig: false
     config:
       apiVersion: k0s.k0sproject.io/v1beta1
       kind: ClusterConfig
       metadata:
-        name: martaneta-k0s-cluster
+        name: k0s-cluster
+      %{ if enable_argocd}
       spec:
         extensions:
           helm:
@@ -28,7 +30,7 @@ spec:
             charts:
             - name: argo-cd
               chartname: argo/argo-cd
-              version: "5.35.0"
+              version: "5.43.3"
               namespace: argocd
               values: |
                 redis-ha:
@@ -45,3 +47,45 @@ spec:
 
                 applicationSet:
                   replicaCount: 1
+            %{ if enable_argocd_apps }
+            - name: argocd-apps
+              chartname: argo/argocd-apps
+              version: "1.4.1"
+              namespace: argocd
+              values: |
+                applications:
+                  - name: manifests
+                    namespace: argocd
+                    finalizers:
+                    - resources-finalizer.argocd.argoproj.io
+                    project: default
+                    source:
+                      ${indent(22, yamlencode(manifests_source))}
+                    destination:
+                      server: https://kubernetes.default.svc
+                      namespace: argocd
+                  %{ if enable_nginx_as_argocd_app }
+                  - name: ingress-nginx
+                    namespace: argocd
+                    finalizers:
+                    - resources-finalizer.argocd.argoproj.io
+                    project: default
+                    source:
+                      repoURL: https://kubernetes.github.io/ingress-nginx
+                      targetRevision: 4.7.1
+                      chart: ingress-nginx
+                      helm:
+                        values: |
+                          controller:
+                            service:
+                              externalIPs:
+                                - ${private_ip}
+                    syncPolicy:
+                      syncOptions:
+                      - CreateNamespace=true
+                    destination:
+                      server: https://kubernetes.default.svc
+                      namespace: ingress-nginx
+                  %{ endif }
+            %{ endif }
+      %{ endif }
