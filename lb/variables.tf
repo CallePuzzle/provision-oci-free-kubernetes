@@ -1,12 +1,17 @@
 variable "name" {
   description = "The name of the k0s cluster"
   type        = string
-  default    = "k0s"
+  default     = "k0s"
 }
 
 variable "compartment_id" {
   type        = string
   description = "The OCID of the compartment"
+}
+
+variable "vcn_id" {
+  type        = string
+  description = "The OCID of the VCN"
 }
 
 variable "subnet_ids" {

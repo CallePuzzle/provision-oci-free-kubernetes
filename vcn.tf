@@ -2,6 +2,24 @@ locals {
   subnet_cidr_block = "10.2.0.0/24"
   # https://docs.k0sproject.io/v1.23.6+k0s.2/networking/?h=netw#required-ports-and-protocols
   additional_default_securty_list_ingress_rules = [
+    # TCP 	80 HTTP
+    {
+      protocol = "6"
+      source   = local.subnet_cidr_block
+      tcp_options = {
+        min = 80
+        max = 80
+      }
+    },
+    # TCP 	443 HTTPS
+    {
+      protocol = "6"
+      source   = local.subnet_cidr_block
+      tcp_options = {
+        min = 443
+        max = 443
+      }
+    },
     # TCP 	2380 	etcd peers
     {
       protocol = "6"
@@ -14,7 +32,7 @@ locals {
     # TCP 	6443 	kube-apiserver
     {
       protocol = "6"
-      source   = local.subnet_cidr_block
+      source   = "0.0.0.0/0"
       tcp_options = {
         min = 6443
         max = 6443

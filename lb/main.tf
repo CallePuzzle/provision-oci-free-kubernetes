@@ -8,6 +8,8 @@ resource "oci_load_balancer_load_balancer" "this" {
   display_name   = "${var.name}-lb"
 
   subnet_ids = var.subnet_ids
+  is_private = false
+  network_security_group_ids = [oci_core_network_security_group.this.id]
 
   shape = data.oci_load_balancer_shapes.this.shapes[0].name
   shape_details {
@@ -27,6 +29,7 @@ resource "oci_load_balancer_backend_set" "this" {
     port              = 80
     retries           = 3
     timeout_in_millis = 3000
+    return_code       = 404
   }
 }
 
