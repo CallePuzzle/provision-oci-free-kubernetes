@@ -72,13 +72,13 @@ variable "lockdown_default_seclist" {
 
 variable "additional_default_securty_list_ingress_rules" {
   description = "List of additional ingress rules to add to the VCN Default Security List"
-  type        = list(object({
+  type = list(object({
     protocol    = string
     source      = string
     tcp_options = optional(map(number), null)
     udp_options = optional(map(number), null)
   }))
-  default     = []
+  default = []
 }
 
 variable "nat_gateway_public_ip_id" {
@@ -168,8 +168,8 @@ variable "nat_gateway_route_rules" {
 
 variable "attached_drg_id" {
   description = "the ID of DRG attached to the VCN"
-  type = string
-  default = null
+  type        = string
+  default     = null
 }
 
 #subnets

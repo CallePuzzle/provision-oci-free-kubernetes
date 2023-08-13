@@ -70,17 +70,17 @@ resource "oci_core_default_security_list" "restore_default" {
         content {
           min = tcp_options.value.min
           max = tcp_options.value.max
-        }        
+        }
       }
       dynamic "udp_options" {
         for_each = rule.value.udp_options == null ? [] : [rule.value.udp_options]
         content {
           min = udp_options.value.min
           max = udp_options.value.max
-        }        
+        }
       }
     }
   }
-  
+
   count = var.lockdown_default_seclist == false ? 1 : 0
 }
