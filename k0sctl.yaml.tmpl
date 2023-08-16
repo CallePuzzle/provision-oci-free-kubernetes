@@ -20,38 +20,70 @@ spec:
       kind: ClusterConfig
       metadata:
         name: k0s-cluster
-      %{ if enable_argocd}
       spec:
+        telemetry:
+          enabled: false
+        %{ if enable_argocd || enable_nginx }
         extensions:
           helm:
             repositories:
+            %{ if enable_argocd }
             - name: argo
               url: https://argoproj.github.io/argo-helm
+            %{ endif }
+            %{ if enable_nginx }
+            - name: ingress-nginx
+              url: https://kubernetes.github.io/ingress-nginx
+            %{ endif }
             charts:
+            %{ if enable_nginx }
+            - name: nginx-ingress
+              chartname: ingress-nginx/ingress-nginx
+              version: "4.7.1"
+              namespace: ingress-nginx
+              order: 1
+              values: |
+                controller:
+                  service:
+                    externalIPs:
+                      - ${private_ip}
+                  publishService:
+                    enabled: false
+            %{ endif }
+            %{ if enable_argocd }
             - name: argo-cd
               chartname: argo/argo-cd
               version: "5.43.3"
               namespace: argocd
+              order: 2
               values: |
                 redis-ha:
                   enabled: false
-
                 controller:
                   replicas: 1
-
                 server:
                   replicas: 1
-
+                  ingress:
+                    enabled: true
+                    ingressClassName: "nginx"
+                    annotations:
+                      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+                    hosts:
+                      - ${argocd_host}
                 repoServer:
                   replicas: 1
-
                 applicationSet:
                   replicaCount: 1
-            %{ if enable_argocd_apps }
+                configs:
+                  params:
+                    server.insecure: true
+            %{ endif }
+            %{ if enable_argocd && enable_argocd_apps }
             - name: argocd-apps
               chartname: argo/argocd-apps
               version: "1.4.1"
               namespace: argocd
+              order: 3
               values: |
                 applications:
                   - name: manifests
@@ -64,28 +96,5 @@ spec:
                     destination:
                       server: https://kubernetes.default.svc
                       namespace: argocd
-                  %{ if enable_nginx_as_argocd_app }
-                  - name: ingress-nginx
-                    namespace: argocd
-                    finalizers:
-                    - resources-finalizer.argocd.argoproj.io
-                    project: default
-                    source:
-                      repoURL: https://kubernetes.github.io/ingress-nginx
-                      targetRevision: 4.7.1
-                      chart: ingress-nginx
-                      helm:
-                        values: |
-                          controller:
-                            service:
-                              externalIPs:
-                                - ${private_ip}
-                    syncPolicy:
-                      syncOptions:
-                      - CreateNamespace=true
-                    destination:
-                      server: https://kubernetes.default.svc
-                      namespace: ingress-nginx
-                  %{ endif }
             %{ endif }
-      %{ endif }
+        %{ endif }

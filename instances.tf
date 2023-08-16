@@ -77,6 +77,7 @@ resource "local_file" "k0sctl" {
     manifests_source           = var.manifests_source
     enable_argocd              = var.enable_argocd
     enable_argocd_apps         = var.enable_argocd_apps
-    enable_nginx_as_argocd_app = var.enable_nginx_as_argocd_app
+    enable_nginx               = var.enable_nginx
+    argocd_host                = var.argocd_host
   })
 }

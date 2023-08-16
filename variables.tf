@@ -20,16 +20,22 @@ variable "enable_argocd" {
   default     = true
 }
 
+variable "enable_nginx" {
+  description = "Enable nginx"
+  type        = bool
+  default     = true
+}
+
 variable "enable_argocd_apps" {
   description = "Enable ArgoCD apps"
   type        = bool
   default     = true
 }
 
-variable "enable_nginx_as_argocd_app" {
-  description = "Enable nginx as ArgoCD app"
-  type        = bool
-  default     = true
+variable "argocd_host" {
+  description = "The hostname of the ArgoCD server"
+  type        = string
+  default     = null
 }
 
 variable "manifests_source" {
@@ -39,9 +45,7 @@ variable "manifests_source" {
     targetRevision = string
     path           = string
     directory = optional(object({
-      recurse = optional(bool)
-      exclude = optional(string)
-      include = optional(string)
+      recurse = optional(bool, false)
     }))
   })
   default = null

@@ -51,3 +51,10 @@ ssh ubuntu@<public_ip>
 sudo su -
 kubectl get pods -A
 ```
+
+## Connect to ArgoCD
+
+```bash
+echo "Admin password: $(kubectl --kubeconfig kubeconfig -n argocd get secret argocd-initial-admin-secret --template={{.data.password}} | base64 -D)"
+kubectl --kubeconfig kubeconfig -n argocd port-forward service/argo-cd-argocd-server 8080:80
+```
