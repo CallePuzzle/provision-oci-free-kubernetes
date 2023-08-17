@@ -41,12 +41,15 @@ variable "argocd_host" {
 variable "manifests_source" {
   description = "A yaml object with source variables for ArgoCD application manifests"
   type = object({
-    repoURL        = string
-    targetRevision = string
-    path           = string
-    directory = optional(object({
-      recurse = optional(bool, false)
-    }))
+    repo_url          = string
+    target_revision   = string
+    path              = string
+    directory_recurse = optional(bool, false)
   })
   default = null
+}
+
+variable "additional_k0s_config" {
+  description = "A yaml object with additional k0s config"
+  default     = {}
 }

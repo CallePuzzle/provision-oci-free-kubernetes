@@ -92,7 +92,11 @@ spec:
                     - resources-finalizer.argocd.argoproj.io
                     project: default
                     source:
-                      ${indent(22, yamlencode(manifests_source))}
+                      repoURL: ${manifests_source.repo_url}
+                      targetRevision: ${manifests_source.target_revision}
+                      path: ${manifests_source.path}
+                      directory:
+                        recurse: ${manifests_source.directory_recurse}
                     destination:
                       server: https://kubernetes.default.svc
                       namespace: argocd

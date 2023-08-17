@@ -7,8 +7,8 @@ resource "oci_load_balancer_load_balancer" "this" {
   compartment_id = var.compartment_id
   display_name   = "${var.name}-lb"
 
-  subnet_ids = var.subnet_ids
-  is_private = false
+  subnet_ids                 = var.subnet_ids
+  is_private                 = false
   network_security_group_ids = [oci_core_network_security_group.this.id]
 
   shape = data.oci_load_balancer_shapes.this.shapes[0].name
