@@ -13,7 +13,7 @@ spec:
     noTaints: true
     privateAddress: ${private_ip}
   k0s:
-    version: 1.27.4+k0s.0
+    version: ${k0s_version}
     dynamicConfig: false
     config:
       apiVersion: k0s.k0sproject.io/v1beta1
@@ -25,6 +25,8 @@ spec:
           enabled: false
         %{ if enable_argocd || enable_nginx }
         extensions:
+          storage:
+            type: openebs_local_storage
           helm:
             repositories:
             %{ if enable_argocd }
@@ -53,30 +55,11 @@ spec:
             %{ if enable_argocd }
             - name: argo-cd
               chartname: argo/argo-cd
-              version: "5.43.3"
+              version: "5.43.4"
               namespace: argocd
               order: 2
               values: |
-                redis-ha:
-                  enabled: false
-                controller:
-                  replicas: 1
-                server:
-                  replicas: 1
-                  ingress:
-                    enabled: true
-                    ingressClassName: "nginx"
-                    annotations:
-                      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-                    hosts:
-                      - ${argocd_host}
-                repoServer:
-                  replicas: 1
-                applicationSet:
-                  replicaCount: 1
-                configs:
-                  params:
-                    server.insecure: true
+                ${indent(16, argocd_values)}
             %{ endif }
             %{ if enable_argocd && enable_argocd_apps }
             - name: argocd-apps

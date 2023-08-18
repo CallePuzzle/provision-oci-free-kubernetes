@@ -39,6 +39,7 @@ module "oci-k0s" {
 source provider-vars.profile
 terraform init
 terraform apply
+terraform apply # the second apply is required to get the public IP of the instance
 k0sctl apply --disable-telemetry --config k0sctl.yaml
 ```
 

@@ -14,6 +14,12 @@ variable "k0s_config_path" {
   type        = string
 }
 
+variable "k0s_version" {
+  description = "The version of k0s to install"
+  type        = string
+  default     = "1.27.4+k0s.0"
+}
+
 variable "enable_argocd" {
   description = "Enable ArgoCD"
   type        = bool
@@ -49,7 +55,7 @@ variable "manifests_source" {
   default = null
 }
 
-variable "additional_k0s_config" {
-  description = "A yaml object with additional k0s config"
+variable "argocd_values" {
+  description = "Replace the default ArgoCD values.yaml with this yaml object"
   default     = {}
 }
