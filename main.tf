@@ -6,7 +6,7 @@ locals {
 
 resource "local_file" "k0sctl" {
   filename = var.k0s_config_path
-  content  = templatefile("${path.module}/templates/k0sctl.yaml.tmpl", {
+  content = templatefile("${path.module}/templates/k0sctl.yaml.tmpl", {
     private_ip         = module.instance["controllerworker"].private_ip[0]
     public_ip          = module.instance["controllerworker"].public_ip[0]
     k0s_version        = var.k0s_version

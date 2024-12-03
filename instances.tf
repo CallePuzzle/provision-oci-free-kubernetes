@@ -31,7 +31,7 @@ module "instance" {
   instance_display_name = each.value.instance_display_name
   instance_state        = "RUNNING"
 
-  source_ocid = data.oci_core_images.this[each.key].images.0.id
+  source_ocid = var.source_ocid != null ? var.source_ocid : data.oci_core_images.this[each.key].images.0.id
   source_type = "image"
 
   shape                       = each.value.shape

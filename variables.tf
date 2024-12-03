@@ -9,6 +9,12 @@ variable "compartment_id" {
   type        = string
 }
 
+variable "source_ocid" {
+  description = "The OCID of the source image"
+  type        = string
+  default     = null
+}
+
 variable "k0s_config_path" {
   description = "The path to the k0s config file"
   type        = string
