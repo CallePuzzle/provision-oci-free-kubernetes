@@ -50,16 +50,22 @@ variable "argocd_host" {
   default     = null
 }
 
-variable "manifests_source" {
-  description = "A yaml object with source variables for ArgoCD application manifests"
-  type = object({
-    repo_url          = string
-    target_revision   = string
-    path              = string
-    directory_recurse = optional(bool, false)
-  })
-  default = null
+variable "projects" {
+  description = "ArgoCD projects"
+  type = list(object({
+    name = string
+    source = object({
+      repo_url        = string
+      target_revision = string
+      path            = optional(string, ".")
+      plugin          = optional(string, "")
+    })
+    destination_namespace = string
+    auto_sync             = optional(bool, true)
+  }))
+  default = []
 }
+
 
 variable "argocd_values" {
   description = "Replace the default ArgoCD values.yaml with this yaml object"

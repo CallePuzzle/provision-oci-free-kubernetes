@@ -3,7 +3,7 @@ data "oci_core_images" "this" {
 
   compartment_id           = var.compartment_id
   operating_system         = "Canonical Ubuntu"
-  operating_system_version = "22.04"
+  operating_system_version = "24.04"
   shape                    = each.value.shape
 }
 

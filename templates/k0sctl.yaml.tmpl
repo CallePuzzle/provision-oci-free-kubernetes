@@ -68,20 +68,42 @@ spec:
               namespace: argocd
               order: 3
               values: |
-                applications:
-                  - name: manifests
+                applications: %{if length(projects) == 0~}{}%{else}
+                  %{for project in projects}
+                  ${project.name}:
                     namespace: argocd
-                    finalizers:
-                    - resources-finalizer.argocd.argoproj.io
-                    project: default
+                    project: ${project.name}
                     source:
-                      repoURL: ${manifests_source.repo_url}
-                      targetRevision: ${manifests_source.target_revision}
-                      path: ${manifests_source.path}
-                      directory:
-                        recurse: ${manifests_source.directory_recurse}
+                      repoURL: ${project.source.repo_url}
+                      targetRevision: ${project.source.target_revision}
+                      path: ${project.source.path}
+                      %{if project.source.plugin != ""}
+                      plugin:
+                        name: ${project.source.plugin}
+                      %{endif}
                     destination:
                       server: https://kubernetes.default.svc
                       namespace: argocd
+                    %{if project.auto_sync}
+                    syncPolicy:
+                      automated:
+                        prune: true
+                    %{endif~}
+                  %{endfor~}%{endif~}
+
+                projects: %{if length(projects) == 0~}{}%{else}
+                  %{for project in projects}
+                  ${project.name}:
+                    namespace: argocd
+                    description: Project for ${project.name}
+                    sourceRepos:
+                    - '${project.source.repo_url}'
+                    destinations:
+                    - namespace: argocd
+                      server: https://kubernetes.default.svc
+                    - namespace: ${project.destination_namespace}
+                      server: https://kubernetes.default.svc
+                  %{endfor~}%{endif~}
+
             %{ endif }
         %{ endif }
